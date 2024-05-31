@@ -1,40 +1,37 @@
-import altair as alt
-import numpy as np
-import pandas as pd
 import streamlit as st
 
-"""
-# Welcome to Streamlit!
+# Initialize session state to store the list of phrases
+if 'phrases' not in st.session_state:
+    st.session_state.phrases = ["Enter your phrases here", "Example phrase 1", "Example phrase 2"]
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+def add_phrase():
+    st.session_state.phrases.append(st.session_state.new_phrase)
+    st.session_state.new_phrase = ""
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+def sort_phrases():
+    st.session_state.phrases.sort()
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+def remove_phrase(index):
+    st.session_state.phrases.pop(index)
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+st.title("Phrase Editor and Sorter")
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
+# Text input to add new phrases
+new_phrase = st.text_input("Add a new phrase", key="new_phrase")
+st.button("Add Phrase", on_click=add_phrase)
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
+# Display the list of phrases with a remove button
+st.write("## Your Phrases")
+for i, phrase in enumerate(st.session_state.phrases):
+    cols = st.columns([10, 1])
+    cols[0].write(phrase)
+    if cols[1].button("Remove", key=f"remove_{i}"):
+        remove_phrase(i)
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+# Button to sort phrases
+if st.button("Sort Phrases"):
+    sort_phrases()
+
+# Display sorted phrases
+st.write("## Sorted Phrases")
+st.write(st.session_state.phrases)
